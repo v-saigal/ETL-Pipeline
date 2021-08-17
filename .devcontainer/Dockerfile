@@ -99,6 +99,11 @@ RUN sudo apt-get update -y
 RUN sudo apt-get upgrade -y
 RUN sudo apt-get install python3-venv -y
 RUN sudo apt-get install python3-pip -y
+##
+RUN apt-get update \
+&& apt-get -y install libpq-dev gcc \
+&& pip3 install psycopg2 
+##
 # Install psycopg2 for the prostgrsql database and dotenv
 RUN pip3 install psycopg2-binary
 RUN pip3 install python-dotenv
