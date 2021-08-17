@@ -4,7 +4,6 @@ from os import remove
 
 pathway = "../../data/2021-02-23-isle-of-wight.csv"
 fieldnames = ["timestamp","store_name","customer_name","basket", "payment_type", "total_price","card_number"]
-keys_to_remove = ["customer_name", "card_number"]
 
 
 def extract(pathway):
@@ -17,6 +16,6 @@ def extract(pathway):
         
         return list(reader)
 
-
+print(extract(pathway))
 
 
