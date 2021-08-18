@@ -40,25 +40,3 @@ def clean_basket(dict_list): # clean up basket
     return dict_list
 
 print(clean_basket(extract(pathway)))
-
-
-
-
-
-
-
-
-
-
-
-
-
-# from itertools import islice
-# def seperate_basket_item(data, size):
-#     it = iter(data)
-#     for i in range(0, len(data), size):
-#         yield {k:data[k] for k in islice(it, size)}
-
-#     # for each_order in dict_list:
-#     #     print(each_order, ':', basket_list[each_order])
-
