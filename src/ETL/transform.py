@@ -1,13 +1,27 @@
 from extract import extract, pathway
 
-keys_to_remove = ["customer_name", "card_number"]
 
-def remove_keys(dict_list, keys_to_remove):
-    for dict in dict_list:
-        for key in keys_to_remove:
-            del dict[key]
-    return dict_list
 
-data = remove_keys(extract(pathway), keys_to_remove)
 
-print(data)
+
+def remove_sensitive_data(transaction_df):
+    
+    transaction_df.drop(columns="customer_name", inplace=True)
+    print(transaction_df.head())
+    
+    col = 'card_type'
+    for i in range(len(transaction_df[col])):
+        current = transaction_df[col].iloc[i]
+        # insert your code here
+        # example - get date after [ bracket
+        if current == None:
+            continue
+        else:
+            split = current.split(',')
+            transaction_df[col].iloc[i] = split[0]
+    print(transaction_df.head())    
+
+
+
+data = remove_sensitive_data(extract(pathway))
+
