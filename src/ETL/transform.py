@@ -11,15 +11,18 @@ def remove_sensitive_data(transaction_df):
     
     col = 'card_type'
     for i in range(len(transaction_df[col])):
+        
         current = transaction_df[col].iloc[i]
-        # insert your code here
-        # example - get date after [ bracket
+        
         if current == None:
             continue
+       
         else:
             split = current.split(',')
             transaction_df[col].iloc[i] = split[0]
-    print(transaction_df.head())    
+            
+    print(transaction_df.head())
+    return transaction_df    
 
 
 
