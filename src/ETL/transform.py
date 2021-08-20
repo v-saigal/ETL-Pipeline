@@ -2,25 +2,9 @@ from helper_modules.helper_funcs import pretty_print_dict
 from cleaner import Cleaner
 from extract import Extract
 
-## Ignore this
-# dummy_transaction = [
-#     {'total': 22.0, 'item_basket': [
-#         {'size':'large', 'product_name': 'tea', 'price': 2.20},
-#         {'size': 'regular', 'product_name': 'coffee', 'price': 1.20}
-#         ]},
-
-#     {'total': 44.0, 'item_basket': [
-#         {'size':'regular', 'product_name': 'chocolate tea', 'price': 2.3},
-#         {'size': 'regular', 'product_name': 'lemon tea', 'price': 1.40}
-#         ]},
-# ]
-
-# pretty_print_dict(dummy_transaction)
-extract = Extract()
-
 # This needs to run just once, need to update
-def clean_data(extract):
-
+def clean_data():
+    extract = Extract()
     cleaner  = Cleaner()
     transaction_df = extract.extract_pandas()
     
@@ -33,12 +17,10 @@ def clean_data(extract):
     
     transaction_df.to_csv('../../data/cleaned_data.csv', sep=',', index=False)
 
-clean_data(extract)
 
-def transform_transaction_format(extract):
+def transform_transaction_format():
+    extract = Extract()
     data = extract.extract_dict("../../data/cleaned_data.csv")
-    pretty_print_dict(data)
-    
     store = []
     
     # This is used to make the basket table, each list contains each transaction,
@@ -58,7 +40,4 @@ def transform_transaction_format(extract):
                     store_unique_item_quanity[item] = item_name.count(item)
                 
                 store.append([store_unique_item_quanity])
-                pretty_print_dict(store)
-                
-                
-transform_transaction_format(extract)
+    return store
