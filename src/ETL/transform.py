@@ -41,3 +41,44 @@ def transform_transaction_format():
                 
                 store.append([store_unique_item_quanity])
     return store
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
+
+def basket_to_dict(basket):
+    basket_split = basket.split(",")
+    store = []
+    
+    for basket in chunks(basket_split, 3):
+        in_store = False
+        
+        for item in store:
+            
+            if basket[0] == item["size"] and basket[1] == item["name"] and basket[2] == item["price"]:
+                in_store = True
+                item["quantity"] += 1
+                break
+       
+            else:
+                continue
+       
+        if in_store == False:
+            item_dict = {"size" : basket[0], "name" : basket[1],
+                        "price" : basket[2], "quantity": 1}
+            store.append(item_dict)
+        else:
+            continue
+    print(store)
+    return store
+    
+def apply_basket_to_dict(transaction_df):
+    
+    transaction_df["basket"] = transaction_df["basket"].apply(lambda x: basket_to_dict(x))       
+    
+    print(transaction_df["basket"])
+    
+    return transaction_df  
