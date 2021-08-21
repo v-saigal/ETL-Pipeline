@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 import psycopg2 as pg2
+import psycopg2.extras
 
 from transform import transform_transaction_format, get_unique_item
 from helper_modules.helper_funcs import pretty_print_dict
@@ -22,13 +23,20 @@ def db_connection_setup():
     
     return conn
 
-cur = db_connection_setup().cursor()
+conn = db_connection_setup()
+cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+cur.execute(\
+    """
+        TRUNCATE TABLE size;        
+    """)
+conn.commit()
 
 cur.execute("""
-    SELECT * FROM test
+    SELECT * FROM test;
 """)
 
-print(cur.fetchone())
+print(cur.fetchall())
 
 ## Skeleton code when loading
 def load_test():
@@ -48,7 +56,7 @@ def load_size():
         '''
             INSERT INTO size (size_name)  
             VALUES (%s)
-            
+            RETURNING size_id
         '''
     
     sizes = ['large', 'regular']
@@ -56,6 +64,7 @@ def load_size():
     for one_data in sizes:
         try:
             cur.execute(sql, (one_data,))
+            print(cur.fetchall())
         except:
             print('cannot be added')
     
