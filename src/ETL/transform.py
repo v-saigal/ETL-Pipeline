@@ -12,9 +12,9 @@ def clean_data():
     
     # Remove card number, change case, replace blanks
     transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_card_number(x))
-    transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.replace_blanks(x))     
+    transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.replace_blanks(x))  
+    transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_numbers_card_type(x))    
     transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.change_case(x))   
-    
     transaction_df.to_csv('../../data/cleaned_data.csv', sep=',', index=False)
 
 #######################################################################
@@ -44,6 +44,22 @@ def transform_transaction_format():
                 
                 store.append([store_unique_item_quanity])
     return store
+
+def get_unique_payment_type(column_name):
+    extract = Extract()
+    data = extract.extract_dict("../../data/cleaned_data.csv")
+    store = []
+    
+    for each_transaction in data:
+        for keys in each_transaction:
+            if keys == column_name:
+                if each_transaction[keys] not in store:
+                    store.append(each_transaction[keys])
+                else:
+                    continue
+    return set(store)
+
+# print(get_unique_payment_type('store_location'))
 
 #############################################################################
 # Get the unique product, size and price
