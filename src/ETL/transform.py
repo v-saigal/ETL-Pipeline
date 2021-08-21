@@ -15,6 +15,9 @@ def clean_data():
     transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.replace_blanks(x))  
     transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_numbers_card_type(x))    
     transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.change_case(x))   
+    
+    # Reorder the columns
+    transaction_df = transaction_df[["timestamp", "store_location","payment_type", "total_price", "card_type", "basket"]]
     transaction_df.to_csv('../../data/cleaned_data.csv', sep=',', index=False)
 
 #######################################################################
@@ -36,7 +39,7 @@ def transform_transaction_format():
                 item_list = each_transaction[keys].split(',')
 
                 for i in list(range(0, len(item_list), 3)):
-                    item_name.append(item_list[i] + ' ' + item_list[i+1])
+                    item_name.append(item_list[i] + ',' + item_list[i+1])
                 unique_item = set(item_name)
                 
                 for item in unique_item:
@@ -45,9 +48,10 @@ def transform_transaction_format():
                 store.append([store_unique_item_quanity])
     return store
 
-def get_unique_payment_type(column_name):
+def get_unique_item_key(column_name):
     extract = Extract()
     data = extract.extract_dict("../../data/cleaned_data.csv")
+    # print(data)
     store = []
     
     for each_transaction in data:
@@ -94,7 +98,7 @@ def get_unique_item():
     for trans in transactions:
         in_store = False
         for item in store:
-            if trans["size"] == item["size"] and trans["name"] == item["name"] and item["price"] == trans["price"]:
+            if trans["size"] == item["size"] and trans["name"] == item["name"]:
                 in_store = True
                 break
             else:
@@ -106,9 +110,6 @@ def get_unique_item():
     return store
 
 #########################################################################################
-
-
-
 
 def basket_to_dict(basket):
     basket_split = basket.split(",")
