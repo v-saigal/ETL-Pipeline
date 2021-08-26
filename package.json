@@ -1,0 +1,25 @@
+{
+  "name": "team-3-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Generation-De-lon-3/team-3-project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Generation-De-lon-3/team-3-project/issues"
+  },
+  "homepage": "https://github.com/Generation-De-lon-3/team-3-project#readme",
+  "dependencies": {
+    "aws-sso-credentials-getter": "^1.2.2"
+  }
+}
