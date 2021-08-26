@@ -1,5 +1,7 @@
-transactions = [{"size":"large", "name":"choco", "price":2.90},{"size":"large", "name":"choco", "price":2.90}, {"size":"regular", "name":"choco", "price":2.90}, {"size":"large", "name":"choco", "price":2.95}]
+import json
 
+transactions = [{"size":"large", "name":"choco", "price":2.90},{"size":"large", "name":"choco", "price":2.90}, {"size":"regular", "name":"choco", "price":2.90}, {"size":"large", "name":"choco", "price":2.95}]
+print(json.dumps(transactions, indent=2, sort_keys=True))
 store = []
 
 
