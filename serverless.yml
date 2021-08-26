@@ -1,0 +1,30 @@
+service: etl-group-3
+​
+frameworkVersion: '2'
+​
+​
+provider:
+  name: aws
+  runtime: python3.8
+  lambdaHashingVersion: 20201221
+  region: eu-west-1
+  iam:
+    role:
+        permissionsBoundary: arn:aws:iam::351115496094:policy/ScopePermissions
+​
+functions:
+  hello:
+    handler: src/etl-group-3/handler.hello
+    events:
+      - http:
+          path: hello
+          method: post
+​
+package:
+  include: 
+    - src/**
+  exclude:
+    - "*"
+    - "*/**" 
+  individually: true
+  excludeDevDependencies: false 
