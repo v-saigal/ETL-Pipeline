@@ -1,25 +1,30 @@
 service: etl-group-3
-​
+
+plugins:
+  - serverless-python-requirements
+  - serverless-iam-roles-per-function
+
 frameworkVersion: '2'
-​
-​
+
 provider:
   name: aws
   runtime: python3.8
   lambdaHashingVersion: 20201221
   region: eu-west-1
-  iam:
+  iam:  
     role:
-        permissionsBoundary: arn:aws:iam::351115496094:policy/ScopePermissions
-​
+      permissionsBoundary: arn:aws:iam::351115496094:policy/ScopePermissions
+
 functions:
-  hello:
-    handler: src/etl-group-3/handler.hello
+  etl2:
+    handler: src/etl-group3/handler.lambda_handler
     events:
-      - http:
-          path: hello
-          method: post
-​
+      - s3:
+          bucket: team3testbucket
+          event: s3:ObjectCreated:*
+          rules:
+            - suffix: .csv
+
 package:
   include: 
     - src/**
