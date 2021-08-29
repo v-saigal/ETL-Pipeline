@@ -16,14 +16,22 @@ provider:
       permissionsBoundary: arn:aws:iam::351115496094:policy/ScopePermissions
 
 functions:
-  etl2:
+  etl3:
     handler: src/etl-group3/handler.lambda_handler
     events:
       - s3:
-          bucket: team3testbucket
+          bucket: group3-test-bucket
           event: s3:ObjectCreated:*
           rules:
             - suffix: .csv
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - s3:GetObject
+          - s3:ListBucket
+        Resource:
+          - arn:aws:s3:::delon3-team-3-bucket
+          - arn:aws:s3:::delon3-team-3-bucket/*
 
 package:
   include: 
