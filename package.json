@@ -21,5 +21,9 @@
   "homepage": "https://github.com/Generation-De-lon-3/team-3-project#readme",
   "dependencies": {
     "aws-sso-credentials-getter": "^1.2.2"
+  },
+  "devDependencies": {
+    "serverless-iam-roles-per-function": "^3.2.0",
+    "serverless-python-requirements": "^5.1.1"
   }
 }
