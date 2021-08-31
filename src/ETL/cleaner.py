@@ -29,3 +29,8 @@ class Cleaner:
         else:
             split = df_value.split(",")
             return split[0]
+    def remove_numbers_card_type(self, df_value):
+        if 'visa' in df_value:
+            return df_value[:4]
+        else:
+            return df_value
