@@ -3,10 +3,10 @@ from typing import final
 from dotenv import load_dotenv
 import psycopg2 as pg2
 import psycopg2.extras
-from extract import Extract
+from ETL.extract import Extract
 
-from transform import get_unique_item_key, transform_transaction_format, get_unique_item
-from helper_modules.helper_funcs import pretty_print_dict
+from ETL.transform import get_unique_item_key, transform_transaction_format, get_unique_item
+from ETL.helper_modules.helper_funcs import pretty_print_dict
 
 # Set up connection
 def db_connection_setup():
@@ -73,7 +73,7 @@ def load_test():
 
 ##############################
 # Product side
-def load_size():
+def load_size(data):
     conn = db_connection_setup()
     cur = conn.cursor()
     sql = \
@@ -129,9 +129,9 @@ def load_product_detail(item, conn, cur):
     finally:
         conn.commit()
 
-def load_product_side():
+def load_product_side(data):
     # Get unique products with size and size
-    unique_item = get_unique_item()
+    unique_item = get_unique_item(data)
     
     pretty_print_dict(unique_item)
 
@@ -165,12 +165,12 @@ def load_product_side():
 # load_product()
 # load_size()
 
-load_product_side()
+# load_product_side()
 
 ###################################
 # Transaction side
-def load_branch():
-    unique_branch = get_unique_item_key('store_location')
+def load_branch(data):
+    unique_branch = get_unique_item_key('store_location', data)
     print(unique_branch)
     sql = \
         """
@@ -194,8 +194,8 @@ def load_branch():
     conn.close()
 
 
-def load_payment_type():
-    unique_payment = get_unique_item_key('payment_type')
+def load_payment_type(data):
+    unique_payment = get_unique_item_key('payment_type', data)
     sql = \
         """
             INSERT INTO payment_type(method)
@@ -219,8 +219,8 @@ def load_payment_type():
     conn.close()
 
 
-def load_card_type():
-    unique_card_type = get_unique_item_key('card_type')
+def load_card_type(data):
+    unique_card_type = get_unique_item_key('card_type', data)
     sql = \
         """
             INSERT INTO card_type(type)
@@ -274,10 +274,10 @@ def basket_load(transaction_with_quantity, transaction_id, count):
         cur.close()
         conn.close()
 
-def load_transaction_side():
+def load_transaction_side(data):
     extract = Extract()
-    data = extract.extract_dict("../../data/cleaned_data.csv")
-    transaction_with_quantity = transform_transaction_format()
+    # data = extract.extract_dict("../../data/cleaned_data.csv")
+    transaction_with_quantity = transform_transaction_format(data)
     
     conn = db_connection_setup()
     cur = conn.cursor()
@@ -288,9 +288,9 @@ def load_transaction_side():
             VALUES (%s, %s, %s, %s, %s)
             RETURNING transaction_id
         """
-    load_branch()
-    load_payment_type()
-    load_card_type()
+    load_branch(data)
+    load_payment_type(data)
+    load_card_type(data)
     
     count = 0
     for each_transaction in data:
@@ -317,6 +317,6 @@ def load_transaction_side():
     cur.close()
     conn.close()
 
-load_transaction_side()
+# load_transaction_side()
 
 # pretty_print_dict(transform_transaction_format())

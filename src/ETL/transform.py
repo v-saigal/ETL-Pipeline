@@ -1,12 +1,12 @@
-from helper_modules.helper_funcs import pretty_print_dict
-from cleaner import Cleaner
-from extract import Extract
+from ETL.helper_modules.helper_funcs import pretty_print_dict
+from ETL.cleaner import Cleaner
+from ETL.extract import Extract
 
 # This needs to run just once, need to update
-def clean_data():
+def clean_data(data):
     extract = Extract()
     cleaner  = Cleaner()
-    transaction_df = extract.extract_pandas()
+    transaction_df = extract.extract_pandas(data)
     
     transaction_df.drop(columns="customer_name", inplace=True)
     
@@ -18,14 +18,14 @@ def clean_data():
     
     # Reorder the columns
     transaction_df = transaction_df[["timestamp", "store_location","payment_type", "total_price", "card_type", "basket"]]
-    transaction_df.to_csv('../../data/cleaned_data.csv', sep=',', index=False)
-
+#    transaction_df.to_csv('../../data/cleaned_data.csv', sep=',', index=False)
+    return transaction_df.to_dict("records")
 #######################################################################
 # Get the product quantity for each transaction
 
-def transform_transaction_format():
+def transform_transaction_format(data):
     extract = Extract()
-    data = extract.extract_dict("../../data/cleaned_data.csv")
+    # data = extract.extract_dict("../../data/cleaned_data.csv")
     store = []
     
     # This is used to make the basket table, each list contains each transaction,
@@ -48,9 +48,9 @@ def transform_transaction_format():
                 store.append([store_unique_item_quanity])
     return store
 
-def get_unique_item_key(column_name):
+def get_unique_item_key(column_name, data):
     extract = Extract()
-    data = extract.extract_dict("../../data/cleaned_data.csv")
+    # data = extract.extract_dict("../../data/cleaned_data.csv")
     # print(data)
     store = []
     
@@ -73,9 +73,9 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-def transform_unique_product():
+def transform_unique_product(data):
     extract = Extract()
-    data = extract.extract_dict("../../data/cleaned_data.csv")
+    # data = extract.extract_dict("../../data/cleaned_data.csv")
     item_store_list = []
     
     for each_transaction in data:
@@ -92,9 +92,9 @@ def transform_unique_product():
                 item_store_list.append(item_store)
     return item_store_list
 
-def get_unique_item():
+def get_unique_item(data):
     store = []
-    transactions = transform_unique_product()
+    transactions = transform_unique_product(data)
     for trans in transactions:
         in_store = False
         for item in store:
