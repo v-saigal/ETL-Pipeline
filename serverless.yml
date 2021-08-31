@@ -18,6 +18,12 @@ provider:
 functions:
   etl3:
     handler: src/etl-group3/handler.lambda_handler
+    layers: arn:aws:lambda:eu-west-1:351115496094:layer:final-project-data-producer-dev-python-requirements:1
+    vpc:
+      securityGroupIds:
+        - sg-0afcfd2a983b80407
+      subnetIds:
+        - subnet-0f0145739a0011749
     events:
       - s3:
           bucket: group3-test-bucket
@@ -39,5 +45,6 @@ package:
   exclude:
     - "*"
     - "*/**" 
+    - throwaway_code/**
   individually: true
   excludeDevDependencies: false 
