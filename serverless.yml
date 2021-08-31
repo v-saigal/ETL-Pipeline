@@ -15,6 +15,13 @@ provider:
     role:
       permissionsBoundary: arn:aws:iam::351115496094:policy/ScopePermissions
 
+resources:
+  Resources:
+    IamRoleCustomResourcesLambdaExecution:
+      Type: AWS::IAM::Role
+      Properties:
+        PermissionsBoundary: arn:aws:iam::351115496094:policy/ScopePermissions
+
 functions:
   etl3:
     handler: src/etl-group3/handler.lambda_handler
@@ -26,8 +33,9 @@ functions:
         - subnet-0f0145739a0011749
     events:
       - s3:
-          bucket: group3-test-bucket
+          bucket: delon3-team-3-bucket
           event: s3:ObjectCreated:*
+          existing: true
           rules:
             - suffix: .csv
     iamRoleStatements:
