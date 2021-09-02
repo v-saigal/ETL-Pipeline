@@ -9,15 +9,19 @@ def clean_data(data):
     transaction_df = extract.extract_pandas(data)
     
     transaction_df.drop(columns="customer_name", inplace=True)
+    print(transaction_df.head())
+    transaction_df.drop(columns="card_type", inplace=True)
     
     # Remove card number, change case, replace blanks
-    transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_card_number(x))
+    # transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_card_number(x))
+    # transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_numbers_card_type(x)) 
+
+    transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.comma_sep_splits(x))
     transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.replace_blanks(x))  
-    transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_numbers_card_type(x))    
     transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.change_case(x))   
     
     # Reorder the columns
-    transaction_df = transaction_df[["timestamp", "store_location","payment_type", "total_price", "card_type", "basket"]]
+    transaction_df = transaction_df[["timestamp", "store_location","payment_type", "total_price", "basket"]]
 #    transaction_df.to_csv('../../data/cleaned_data.csv', sep=',', index=False)
     return transaction_df.to_dict("records")
 #######################################################################
