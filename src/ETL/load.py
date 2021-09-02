@@ -1,8 +1,9 @@
+
 import os
 from typing import final
 from dotenv import load_dotenv
 import psycopg2 as pg2
-import psycopg2.extras
+from datetime import datetime
 from ETL.extract import Extract
 
 from ETL.transform import get_unique_item_key, transform_transaction_format, get_unique_item
@@ -219,27 +220,27 @@ def load_payment_type(data):
     conn.close()
 
 
-def load_card_type(data):
-    unique_card_type = get_unique_item_key('card_type', data)
-    sql = \
-        """
-            INSERT INTO card_type(type)
-            VALUES(%s)
-        """
-    conn = db_connection_setup()
-    cur = conn.cursor()
+# def load_card_type(data):
+#     unique_card_type = get_unique_item_key('card_type', data)
+#     sql = \
+#         """
+#             INSERT INTO card_type(type)
+#             VALUES(%s)
+#         """
+#     conn = db_connection_setup()
+#     cur = conn.cursor()
     
-    for card_type in unique_card_type:
-        try:
-            cur.execute(sql, (card_type,) )
+#     for card_type in unique_card_type:
+#         try:
+#             cur.execute(sql, (card_type,) )
 
-        except Exception as e:
-            print('Cannot add card_type', e)
-        finally:
-            conn.commit()
+#         except Exception as e:
+#             print('Cannot add card_type', e)
+#         finally:
+#             conn.commit()
 
-    cur.close()
-    conn.close()
+#     cur.close()
+#     conn.close()
 
 def basket_load(transaction_with_quantity, transaction_id, count):
         sql_basket = \
@@ -284,22 +285,24 @@ def load_transaction_side(data):
     
     sql = \
         """
-            INSERT INTO transaction (payment_type_id, branch_id, card_type_id, time_stamp, total_price)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO transaction (payment_type_id, branch_id, time_stamp, total_price)
+            VALUES (%s, %s, %s, %s)
             RETURNING transaction_id
         """
     load_branch(data)
     load_payment_type(data)
-    load_card_type(data)
+    # load_card_type(data)
     
     count = 0
     for each_transaction in data:
         # print(each_transaction)
         payment_type_val = compare_get_query_id('SELECT * FROM payment_type', each_transaction['payment_type'])
         branch_val = compare_get_query_id('SELECT * FROM branch', each_transaction['store_location'])
-        card_type_val = compare_get_query_id('SELECT * FROM card_type', each_transaction['card_type'])
-
-        values = (payment_type_val, branch_val, card_type_val, each_transaction['timestamp'], float(each_transaction['total_price']))
+        # card_type_val = compare_get_query_id('SELECT * FROM card_type', each_transaction['card_type'])
+        print(each_transaction['timestamp'])
+        time = datetime.strptime(each_transaction['timestamp'], '%d/%m/%Y %H:%M')
+        
+        values = (payment_type_val, branch_val, time, float(each_transaction['total_price']))
         # print('values: ',values)
         try:
             cur.execute(sql, values, )
@@ -317,6 +320,8 @@ def load_transaction_side(data):
     cur.close()
     conn.close()
 
-# load_transaction_side()
-
-# pretty_print_dict(transform_transaction_format())
+def load_data(data):
+    load_size(data)
+    load_product_side(data)
+    print('Transaction side loading')
+    load_transaction_side(data)
