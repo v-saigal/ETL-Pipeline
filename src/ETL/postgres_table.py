@@ -49,19 +49,10 @@ def create_tables():
         """)
 
         cur.execute("""
-        CREATE TABLE IF NOT EXISTS card_type(
-            card_type_id SERIAL NOT NULL,
-            type VARCHAR(255) UNIQUE NOT NULL,
-            PRIMARY KEY(card_type_id)
-        );
-        """)
-
-        cur.execute("""
         CREATE TABLE IF NOT EXISTS transaction(
             transaction_id SERIAL NOT NULL,
             payment_type_id INT references payment_type(payment_type_id) NOT NULL,
             branch_id INT references branch(branch_id) NOT NULL,
-            card_type_id INT references card_type(card_type_id) NOT NULL,
             time_stamp  TIMESTAMP ,
             total_price FLOAT NOT NULL,
             PRIMARY KEY(transaction_id)
