@@ -314,7 +314,7 @@ def load_transaction_side(data):
         # print('values: ',values)
         try:
             cur.execute(sql, values, )
-            transaction_id = cur.lastrowid
+            transaction_id = cur.fetchone()[0]
         except Exception as e:
             print('Cannot add transaction', e)
         finally:
