@@ -1,27 +1,35 @@
 
 import os
 from typing import final
-from dotenv import load_dotenv
 import psycopg2 as pg2
 from datetime import datetime
 from ETL.extract import Extract
-
+import boto3
 from ETL.transform import get_unique_item_key, transform_transaction_format, get_unique_item
 from ETL.helper_modules.helper_funcs import pretty_print_dict
 
 # Set up connection
 def db_connection_setup():
-    load_dotenv()
-    host = os.environ.get("postgres_host")
-    user = os.environ.get("postgres_user")
-    password = os.environ.get("postgres_pass")
-    warehouse_db_name = os.environ.get("postgres_db")
-
+    client = boto3.client('redshift', region_name='eu-west-1')
+    
+    redshift_user = os.environ.get("redshift_user")
+    redshift_cluster = os.environ.get("redshift_cluster")
+    redshift_database = os.environ.get("redshift_database")
+    host = os.environ.get("redshift_host")
+    port = os.environ.get("redshift_port")
+    
+    creds = client.get_cluster_credentials(
+      DbUser=redshift_user,
+      DbName=redshift_database,
+      ClusterIdentifier=redshift_cluster,
+      DurationSeconds=3600)
+    
     conn = pg2.connect(
-        user=user, 
-        password=password,
+        user=creds["DbUser"], 
+        password=creds["DbPassword"],
         host=host,
-        database=warehouse_db_name            
+        database=redshift_database,
+        port=port            
     )
 
     return conn
