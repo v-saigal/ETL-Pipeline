@@ -24,7 +24,7 @@ resources:
 
 functions:
   etl3:
-    handler: src/etl-group3/handler.lambda_handler
+    handler: src/handler.lambda_handler
     layers: arn:aws:lambda:eu-west-1:351115496094:layer:final-project-data-producer-dev-python-requirements:1
     vpc:
       securityGroupIds:

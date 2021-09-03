@@ -1,4 +1,4 @@
-from ETL.load import db_connection_setup
+from src.ETL.load import db_connection_setup
 
 def create_tables():
     print('creating tables')
