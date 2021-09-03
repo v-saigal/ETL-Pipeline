@@ -1,6 +1,6 @@
-from ETL.helper_modules.helper_funcs import pretty_print_dict
-from ETL.cleaner import Cleaner
-from ETL.extract import Extract
+from src.ETL.helper_modules.helper_funcs import pretty_print_dict
+from src.ETL.cleaner import Cleaner
+from src.ETL.extract import Extract
 
 # This needs to run just once, need to update
 def clean_data(data):
