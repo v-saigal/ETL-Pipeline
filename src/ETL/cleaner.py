@@ -34,3 +34,16 @@ class Cleaner:
             return df_value[:4]
         else:
             return df_value
+    
+    def comma_sep_splits(self, df_value):
+        store = []
+        split_each_item = df_value.split(',')
+        
+        for item in split_each_item:
+            split_item_price = item.rsplit('-', 1)
+            joined_clean_split_item_price = ','.join([x.strip() for x in split_item_price])
+            
+            split_each_category = joined_clean_split_item_price.split(" ", 1)
+            store.append(','.join(split_each_category))
+        
+        return ','.join(store)
