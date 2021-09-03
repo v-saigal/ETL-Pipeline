@@ -46,7 +46,12 @@ functions:
         Resource:
           - arn:aws:s3:::delon3-team-3-bucket
           - arn:aws:s3:::delon3-team-3-bucket/*
-
+    environment:
+      redshift_cluster: "redshiftcluster-jlqz8zhcuit6"
+      redshift_host: "172.31.71.76"
+      redshift_database: "team-3-db"
+      redshift_port: "5439"
+      redshift_user: "awsuser"
 package:
   include: 
     - src/**
@@ -56,3 +61,7 @@ package:
     - throwaway_code/**
   individually: true
   excludeDevDependencies: false 
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
