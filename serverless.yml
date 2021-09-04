@@ -25,12 +25,15 @@ resources:
 functions:
   etl3:
     handler: src/handler.lambda_handler
-    layers: arn:aws:lambda:eu-west-1:351115496094:layer:final-project-data-producer-dev-python-requirements:1
+    layers: 
+      - Ref: PythonRequirementsLambdaLayer
     vpc:
       securityGroupIds:
         - sg-0afcfd2a983b80407
       subnetIds:
         - subnet-0f0145739a0011749
+        - subnet-0b5a9c546fd7ca400
+        - subnet-026cbc956a6cc5592
     events:
       - s3:
           bucket: delon3-team-3-bucket
@@ -65,3 +68,5 @@ package:
 custom:
   pythonRequirements:
     dockerizePip: true
+    slim: true
+    layer: true
