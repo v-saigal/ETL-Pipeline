@@ -147,4 +147,19 @@ def apply_basket_to_dict(transaction_df):
     
     print(transaction_df["basket"])
     
-    return transaction_df  
+    return transaction_df
+
+# split out the elements in the items, extract the size of the whole basket column
+def get_unique_size(data):  #dictionary method
+
+    size_list = []
+
+    for x in data:  #split by comma and dash
+        item_list = x['basket'].split(',')
+
+        for n in chunks(item_list,3): #run through each item
+            # each = n.split('-')
+            # size_list.append(each[0].strip().split(' ')[0]) #first element in the item
+            size_list.append(n[0])
+    unique_size = set(size_list) #makes unique size table
+    return unique_size
