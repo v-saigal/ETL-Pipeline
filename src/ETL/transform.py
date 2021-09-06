@@ -147,7 +147,7 @@ def apply_basket_to_dict(transaction_df):
     
     print(transaction_df["basket"])
     
-    return transaction_df  
+    return transaction_df
 
 # split out the elements in the items, extract the size of the whole basket column
 def get_unique_size(data):  #dictionary method
