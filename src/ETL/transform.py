@@ -1,6 +1,6 @@
-from ETL.helper_modules.helper_funcs import pretty_print_dict
-from ETL.cleaner import Cleaner
-from ETL.extract import Extract
+from src.ETL.helper_modules.helper_funcs import pretty_print_dict
+from src.ETL.cleaner import Cleaner
+from src.ETL.extract import Extract
 
 # This needs to run just once, need to update
 def clean_data(data):
@@ -9,15 +9,19 @@ def clean_data(data):
     transaction_df = extract.extract_pandas(data)
     
     transaction_df.drop(columns="customer_name", inplace=True)
+    print(transaction_df.head())
+    transaction_df.drop(columns="card_type", inplace=True)
     
     # Remove card number, change case, replace blanks
-    transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_card_number(x))
+    # transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_card_number(x))
+    # transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_numbers_card_type(x)) 
+
+    transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.comma_sep_splits(x))
     transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.replace_blanks(x))  
-    transaction_df["card_type"] = transaction_df["card_type"].apply(lambda x: cleaner.remove_numbers_card_type(x))    
     transaction_df["basket"] = transaction_df["basket"].apply(lambda x: cleaner.change_case(x))   
     
     # Reorder the columns
-    transaction_df = transaction_df[["timestamp", "store_location","payment_type", "total_price", "card_type", "basket"]]
+    transaction_df = transaction_df[["timestamp", "store_location","payment_type", "total_price", "basket"]]
 #    transaction_df.to_csv('../../data/cleaned_data.csv', sep=',', index=False)
     return transaction_df.to_dict("records")
 #######################################################################
@@ -144,3 +148,18 @@ def apply_basket_to_dict(transaction_df):
     print(transaction_df["basket"])
     
     return transaction_df  
+
+# split out the elements in the items, extract the size of the whole basket column
+def get_unique_size(data):  #dictionary method
+
+    size_list = []
+
+    for x in data:  #split by comma and dash
+        item_list = x['basket'].split(',')
+
+        for n in chunks(item_list,3): #run through each item
+            # each = n.split('-')
+            # size_list.append(each[0].strip().split(' ')[0]) #first element in the item
+            size_list.append(n[0])
+    unique_size = set(size_list) #makes unique size table
+    return unique_size
