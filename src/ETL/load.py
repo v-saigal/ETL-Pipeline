@@ -22,10 +22,10 @@ def db_connection_setup():
     port = os.environ.get("redshift_port")
     
     creds = client.get_cluster_credentials(
-      DbUser=redshift_user,
-      DbName=redshift_database,
-      ClusterIdentifier=redshift_cluster,
-      DurationSeconds=3600)
+        DbUser=redshift_user,
+        DbName=redshift_database,
+        ClusterIdentifier=redshift_cluster,
+        DurationSeconds=3600)
     
     conn = pg2.connect(
         user=creds["DbUser"], 
@@ -57,6 +57,20 @@ def compare_get_query_id(sql, value):
         if item[1] == value:
             return item[0]
 
+def check_unique(conn, cur, sql_check, sql_check_values, sql_execute, values):
+    try:
+        print('In here')
+        cur.execute(sql_check, sql_check_values)
+        print('In here 2')
+        if cur.fetchone() is None:
+            print('There is nothing similar')
+            cur.execute(sql_execute, values)
+        else:
+            print('There is already something similar')
+    except Exception as e:
+        print('Cannot add: ', e)
+    finally:
+        conn.commit()
 # conn = db_connection_setup()
 # cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
@@ -88,19 +102,24 @@ def load_test():
 def load_size(data):
     conn = db_connection_setup()
     cur = conn.cursor()
-    sql = \
+
+    sql_execute = \
         '''
             INSERT INTO size (size_name)  
             VALUES (%s)
-            RETURNING size_id
+        '''
+    
+    sql_check = \
+        '''
+            SELECT size_name FROM size WHERE size_name = %s
         '''
 
     sizes = ['large', 'regular']
 
     for one_data in sizes:
+
         try:
-            cur.execute(sql, (one_data,))
-            # print(cur.fetchall())
+            check_unique(conn, cur, sql_check, (one_data,), sql_execute, (one_data,))
         except:
             print('cannot be added')
         finally:
@@ -108,7 +127,8 @@ def load_size(data):
 
     cur.close()
     conn.close()
-    
+
+
 def load_product_detail(item, conn, cur):
     conn = db_connection_setup()
     cur = conn.cursor()
@@ -141,17 +161,22 @@ def load_product_detail(item, conn, cur):
     finally:
         conn.commit()
 
+
 def load_product_side(data):
     # Get unique products with size and size
     unique_item = get_unique_item(data)
     
     pretty_print_dict(unique_item)
 
+    sql_check = \
+        '''
+            SELECT * FROM product_name WHERE product_name = %s
+        '''
+    
     sql_product_name = \
         """
             INSERT INTO product_name(product_name)
             VALUES (%s)
-            RETURNING product_name_id
         """
 
 
@@ -161,7 +186,8 @@ def load_product_side(data):
     for item in unique_item:
         try:
             ## Load product_name table
-            cur.execute(sql_product_name, (item['name'], ))
+            check_unique(conn, cur, sql_check, (item['name'], ), sql_product_name, (item['name'], ))
+            # cur.execute(sql_product_name, (item['name'], ))
         except Exception as e:
             print('Cannot add this product: ', e)
 
@@ -184,18 +210,24 @@ def load_product_side(data):
 def load_branch(data):
     unique_branch = get_unique_item_key('store_location', data)
     print(unique_branch)
+    
+    sql_check = \
+        '''
+            SELECT location FROM branch WHERE location = %s
+        '''
+    
     sql = \
         """
             INSERT INTO branch(location)
             VALUES(%s)
-            RETURNING branch_id
         """
     conn = db_connection_setup()
     cur = conn.cursor()
 
     for branch in unique_branch: 
         try:
-            cur.execute(sql, (branch,))
+            check_unique(conn, cur, sql_check, (branch, ), sql, (branch, ))
+            # cur.execute(sql, (branch,))
 
         except Exception as e:
             print('Cannot add branch', e)
@@ -208,11 +240,16 @@ def load_branch(data):
 
 def load_payment_type(data):
     unique_payment = get_unique_item_key('payment_type', data)
+    
+    sql_check = \
+    '''
+        SELECT method FROM payment_type WHERE method = %s
+    '''
+    
     sql = \
         """
             INSERT INTO payment_type(method)
             VALUES(%s)
-            RETURNING payment_type_id
         """
 
     conn = db_connection_setup()
@@ -220,7 +257,8 @@ def load_payment_type(data):
     
     for payment in unique_payment:
         try:
-            cur.execute(sql, (payment,) )
+            check_unique(conn, cur, sql_check, (payment, ), sql, (payment, ))
+            # cur.execute(sql, (payment,) )
 
         except Exception as e:
             print('Cannot add payment', e)
@@ -298,7 +336,6 @@ def load_transaction_side(data):
         """
             INSERT INTO transaction (payment_type_id, branch_id, time_stamp, total_price)
             VALUES (%s, %s, %s, %s)
-            RETURNING transaction_id
         """
     load_branch(data)
     load_payment_type(data)
@@ -317,6 +354,7 @@ def load_transaction_side(data):
         # print('values: ',values)
         try:
             cur.execute(sql, values, )
+            cur.execute('SELECT MAX(transaction_id) FROM transaction')
             transaction_id = cur.fetchone()[0]
         except Exception as e:
             print('Cannot add transaction', e)
