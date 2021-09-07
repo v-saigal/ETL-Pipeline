@@ -1,23 +1,20 @@
-import json
 import boto3
-import csv
+import time
 from src.app import etl
-
-import sys
-print(sys.path)
+from io import StringIO
 
 def get_data(event):
     key = event['Records'][0]['s3']['object']['key']
     bucket = event['Records'][0]['s3']['bucket']['name']
     
+    print(key)
+    # time.sleep(10)
     s3 = boto3.client('s3')
     s3_object = s3.get_object(Bucket = bucket, Key = key)
     data = s3_object['Body'].read().decode('utf-8')
     
-    csv_data = csv.DictReader(data.splitlines())
-    print(csv_data)
-    
-    return csv_data
+    # Returns it in a format for pandas to work
+    return StringIO(data)
 
 def lambda_handler(event, context):
     # Get the s3 bucket triggered data
@@ -27,6 +24,6 @@ def lambda_handler(event, context):
     
     return {
         'statusCode': 200,
-        'body': json.dumps(data['Body'].read().decode('utf-8'))
+        'body': 'Data has been loaded!'
     }
 
