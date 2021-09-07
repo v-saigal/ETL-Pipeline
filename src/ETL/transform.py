@@ -85,15 +85,17 @@ def transform_unique_product(data):
     for each_transaction in data:
         for keys in each_transaction:
             if keys == "basket":
-                item_store = {}
+                
                 item_list = each_transaction[keys].split(',')
                 
                 for item in chunks(item_list, 3):
+                    item_store = {}
                     item_store['size'] = item[0]
                     item_store['name'] = item[1]
                     item_store['price'] = item[2]
                     
                     item_store_list.append(item_store)
+                    
     return item_store_list
 
 def get_unique_item(data):
