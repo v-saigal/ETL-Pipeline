@@ -115,7 +115,7 @@ def load_size(data):
         '''
 
     # sizes = ['large', 'regular']
-    sizes = get_unique_size()
+    sizes = get_unique_size(data)
 
     for one_data in sizes:
 
