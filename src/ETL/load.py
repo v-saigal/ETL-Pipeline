@@ -7,7 +7,7 @@ import psycopg2 as pg2
 from datetime import datetime
 
 from src.ETL.extract import Extract
-from src.ETL.transform import get_unique_item_key, transform_transaction_format, get_unique_item
+from src.ETL.transform import get_unique_item_key, transform_transaction_format, get_unique_item, get_unique_size
 from src.ETL.helper_modules.helper_funcs import pretty_print_dict
 
 
@@ -114,7 +114,8 @@ def load_size(data):
             SELECT size_name FROM size WHERE size_name = %s
         '''
 
-    sizes = ['large', 'regular']
+    # sizes = ['large', 'regular']
+    sizes = get_unique_size()
 
     for one_data in sizes:
 
