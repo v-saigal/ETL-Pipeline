@@ -1,4 +1,4 @@
-service: etl-group-3-sqs
+service: etl-group-3
 
 plugins:
   - serverless-python-requirements
@@ -23,27 +23,8 @@ resources:
         PermissionsBoundary: arn:aws:iam::351115496094:policy/ScopePermissions
 
 functions:
-  extract_transform:
-    handler: src/sqs_extract_transform.lambda_handler
-    role: "arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole"
-    timeout: 300
-    layers: 
-      - Ref: PythonRequirementsLambdaLayer
-    events:
-      - s3:
-          bucket: team3-queue-test
-          event: s3:ObjectCreated:*
-          existing: true
-          rules:
-            - suffix: .csv
-        Resource:
-          - arn:aws:s3:::team3-queue-test
-          - arn:aws:s3:::team3-queue-test/*
-  
-  load:
-    handler: src/sqs_load.lambda_handler
-    role: "arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole"
-    timeout: 300
+  etl3:
+    handler: src/handler.lambda_handler
     layers: 
       - Ref: PythonRequirementsLambdaLayer
     vpc:
@@ -53,6 +34,21 @@ functions:
         - subnet-0f0145739a0011749
         - subnet-0b5a9c546fd7ca400
         - subnet-026cbc956a6cc5592
+    events:
+      - s3:
+          bucket: delon3-team-3-bucket
+          event: s3:ObjectCreated:*
+          existing: true
+          rules:
+            - suffix: .csv
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - s3:GetObject
+          - s3:ListBucket
+        Resource:
+          - arn:aws:s3:::delon3-team-3-bucket
+          - arn:aws:s3:::delon3-team-3-bucket/*
     environment:
       redshift_cluster: "redshiftcluster-jlqz8zhcuit6"
       redshift_host: "172.31.71.76"
