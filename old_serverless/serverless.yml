@@ -1,0 +1,72 @@
+service: etl-group-3
+
+plugins:
+  - serverless-python-requirements
+  - serverless-iam-roles-per-function
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: python3.8
+  lambdaHashingVersion: 20201221
+  region: eu-west-1
+  iam:  
+    role:
+      permissionsBoundary: arn:aws:iam::351115496094:policy/ScopePermissions
+
+resources:
+  Resources:
+    IamRoleCustomResourcesLambdaExecution:
+      Type: AWS::IAM::Role
+      Properties:
+        PermissionsBoundary: arn:aws:iam::351115496094:policy/ScopePermissions
+
+functions:
+  etl3:
+    handler: src/handler.lambda_handler
+    layers: 
+      - Ref: PythonRequirementsLambdaLayer
+    vpc:
+      securityGroupIds:
+        - sg-0afcfd2a983b80407
+      subnetIds:
+        - subnet-0f0145739a0011749
+        - subnet-0b5a9c546fd7ca400
+        - subnet-026cbc956a6cc5592
+    events:
+      - s3:
+          bucket: delon3-team-3-bucket
+          event: s3:ObjectCreated:*
+          existing: true
+          rules:
+            - suffix: .csv
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - s3:GetObject
+          - s3:ListBucket
+        Resource:
+          - arn:aws:s3:::delon3-team-3-bucket
+          - arn:aws:s3:::delon3-team-3-bucket/*
+    environment:
+      redshift_cluster: "redshiftcluster-jlqz8zhcuit6"
+      redshift_host: "172.31.71.76"
+      redshift_database: "team-3-db"
+      redshift_port: "5439"
+      redshift_user: "awsuser"
+package:
+  include: 
+    - src/**
+  exclude:
+    - "*"
+    - "*/**" 
+    - throwaway_code/**
+  individually: true
+  excludeDevDependencies: false 
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+    slim: true
+    layer: true
