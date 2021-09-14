@@ -9,7 +9,7 @@ def clean_data(data):
     transaction_df = extract.extract_pandas(data)
     
     transaction_df.drop(columns="customer_name", inplace=True)
-    print(transaction_df.head())
+    # print(transaction_df.head())
     transaction_df.drop(columns="card_type", inplace=True)
     
     # Remove card number, change case, replace blanks
@@ -140,14 +140,14 @@ def basket_to_dict(basket):
             store.append(item_dict)
         else:
             continue
-    print(store)
+    # print(store)
     return store
     
 def apply_basket_to_dict(transaction_df):
     
     transaction_df["basket"] = transaction_df["basket"].apply(lambda x: basket_to_dict(x))       
     
-    print(transaction_df["basket"])
+    # print(transaction_df["basket"])
     
     return transaction_df
 

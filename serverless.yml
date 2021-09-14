@@ -31,14 +31,11 @@ functions:
       - Ref: PythonRequirementsLambdaLayer
     events:
       - s3:
-          bucket: team3-queue-test
+          bucket: delon3-team-3-bucket
           event: s3:ObjectCreated:*
           existing: true
           rules:
             - suffix: .csv
-        Resource:
-          - arn:aws:s3:::team3-queue-test
-          - arn:aws:s3:::team3-queue-test/*
   
   load:
     handler: src/sqs_load.lambda_handler
