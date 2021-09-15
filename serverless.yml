@@ -3,7 +3,7 @@ service: etl-group-3-sqs
 plugins:
   - serverless-python-requirements
   - serverless-iam-roles-per-function
-
+  - serverless-lift
 frameworkVersion: '2'
 
 provider:
@@ -25,6 +25,8 @@ resources:
 functions:
   extract_transform:
     handler: src/sqs_extract_transform.lambda_handler
+    environment:
+      QUEUE_URL: "https://sqs.eu-west-1.amazonaws.com/351115496094/etl-group-3-sqs-dev-load"
     role: "arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole"
     timeout: 300
     layers: 
@@ -37,31 +39,29 @@ functions:
           rules:
             - suffix: .csv
   
+constructs:
   load:
-    handler: src/sqs_load.lambda_handler
-    role: "arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole"
-    timeout: 300
-    reservedConcurrency: 1
-    layers: 
-      - Ref: PythonRequirementsLambdaLayer
-    vpc:
-      securityGroupIds:
-        - sg-0afcfd2a983b80407
-      subnetIds:
-        - subnet-0f0145739a0011749
-        - subnet-0b5a9c546fd7ca400
-        - subnet-026cbc956a6cc5592
-    events:
-      - sqs:
-            arn: arn:aws:sqs:eu-west-1:351115496094:team3-SQS
-            batchSize: 1
-            maximumBatchingWindow: 60
-    environment:
-      redshift_cluster: "redshiftcluster-jlqz8zhcuit6"
-      redshift_host: "172.31.71.76"
-      redshift_database: "team-3-db"
-      redshift_port: "5439"
-      redshift_user: "awsuser"
+    type: queue
+    worker: 
+      handler: src/sqs_load.lambda_handler
+      role: "arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole"
+      timeout: 300
+      reservedConcurrency: 1
+      layers: 
+        - Ref: PythonRequirementsLambdaLayer
+      vpc:
+        securityGroupIds:
+          - sg-0afcfd2a983b80407
+        subnetIds:
+          - subnet-0f0145739a0011749
+          - subnet-0b5a9c546fd7ca400
+          - subnet-026cbc956a6cc5592
+      environment:
+        redshift_cluster: "redshiftcluster-jlqz8zhcuit6"
+        redshift_host: "172.31.71.76"
+        redshift_database: "team-3-db"
+        redshift_port: "5439"
+        redshift_user: "awsuser"
 package:
   include: 
     - src/**
