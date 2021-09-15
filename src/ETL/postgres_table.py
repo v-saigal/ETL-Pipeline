@@ -1,9 +1,5 @@
-from src.ETL.load import db_connection_setup
-
-def create_tables():
+def create_tables(conn, cur):
     print('creating tables')
-    conn = db_connection_setup()
-    cur = conn.cursor()
     
     try: 
         cur.execute("""
@@ -72,6 +68,3 @@ def create_tables():
     
     finally:
         conn.commit()
-    
-    cur.close()
-    conn.close()
