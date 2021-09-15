@@ -2,6 +2,7 @@ import json
 import boto3
 from io import StringIO
 import re
+import os
 
 
 from src.ETL.transform import clean_data
@@ -55,7 +56,7 @@ def lambda_handler(event, context):
     file_name = write_data(data, event)
     
     sqs = boto3.client('sqs')
-    queue_url = 'https://sqs.eu-west-1.amazonaws.com/351115496094/team3-SQS'
+    queue_url = os.environ.get("QUEUE_URL")
     
     response = sqs.send_message(
         QueueUrl = queue_url,
