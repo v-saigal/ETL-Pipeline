@@ -41,6 +41,7 @@ functions:
     handler: src/sqs_load.lambda_handler
     role: "arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole"
     timeout: 300
+    reservedConcurrency: 1
     layers: 
       - Ref: PythonRequirementsLambdaLayer
     vpc:
@@ -50,6 +51,11 @@ functions:
         - subnet-0f0145739a0011749
         - subnet-0b5a9c546fd7ca400
         - subnet-026cbc956a6cc5592
+    events:
+      - sqs:
+            arn: arn:aws:sqs:eu-west-1:351115496094:team3-SQS
+            batchSize: 1
+            maximumBatchingWindow: 60
     environment:
       redshift_cluster: "redshiftcluster-jlqz8zhcuit6"
       redshift_host: "172.31.71.76"
