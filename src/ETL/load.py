@@ -1,53 +1,10 @@
-
-import os
-import boto3
-
-from typing import final
-import psycopg2 as pg2
 from datetime import datetime
 
 from src.ETL.extract import Extract
 from src.ETL.transform import get_unique_item_key, transform_transaction_format, get_unique_item, get_unique_size
 # from src.ETL.helper_modules.helper_funcs import pretty_print_dict
 
-
-# Set up connection
-def db_connection_setup():
-    client = boto3.client('redshift', region_name='eu-west-1')
-    
-    redshift_user = os.environ.get("redshift_user")
-    redshift_cluster = os.environ.get("redshift_cluster")
-    redshift_database = os.environ.get("redshift_database")
-    host = os.environ.get("redshift_host")
-    port = os.environ.get("redshift_port")
-    
-    creds = client.get_cluster_credentials(
-        DbUser=redshift_user,
-        DbName=redshift_database,
-        ClusterIdentifier=redshift_cluster,
-        DurationSeconds=3600)
-    
-    conn = pg2.connect(
-        user=creds["DbUser"], 
-        password=creds["DbPassword"],
-        host=host,
-        database=redshift_database,
-        port=port            
-    )
-
-    return conn
-
-# def get_sql_query(sql):
-#     conn = db_connection_setup()
-#     cur = conn.cursor()
-    
-#     cur.execute(sql)
-    
-#     return cur.fetchall()
-
-def compare_get_query_id(sql, value):
-    conn = db_connection_setup()
-    cur = conn.cursor()
+def compare_get_query_id(sql, value, cur):
     cur.execute(sql)
     
     row = cur.fetchall()
@@ -71,20 +28,7 @@ def check_unique(conn, cur, sql_check, sql_check_values, sql_execute, values):
         print('Cannot add: ', e)
     finally:
         conn.commit()
-# conn = db_connection_setup()
-# cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-# cur.execute(\
-#     """
-#         TRUNCATE TABLE size;        
-#     """)
-# conn.commit()
-
-# cur.execute("""
-#     SELECT * FROM test;
-# """)
-
-# print(cur.fetchall())
 
 ## Skeleton code when loading
 def load_test():
@@ -99,10 +43,7 @@ def load_test():
 
 ##############################
 # Product side
-def load_size(data):
-    conn = db_connection_setup()
-    cur = conn.cursor()
-
+def load_size(data, conn, cur):
     sql_execute = \
         '''
             INSERT INTO size (size_name)  
@@ -126,14 +67,8 @@ def load_size(data):
         finally:
             conn.commit()
 
-    cur.close()
-    conn.close()
-
 
 def load_product_detail(item, conn, cur):
-    conn = db_connection_setup()
-    cur = conn.cursor()
-    
     sql_product_details = \
     """
         INSERT INTO product_detail(size_id, product_name_id, price)
@@ -141,8 +76,8 @@ def load_product_detail(item, conn, cur):
     """
     try:
         ## Load product_detail table
-        id_for_size = compare_get_query_id('SELECT * FROM size', item['size'])
-        id_for_product_name = compare_get_query_id('SELECT * FROM product_name', item['name'])
+        id_for_size = compare_get_query_id('SELECT * FROM size', item['size'], cur)
+        id_for_product_name = compare_get_query_id('SELECT * FROM product_name', item['name'], cur)
         values = (id_for_size, id_for_product_name, float(item['price']))
         
         # print('test:', id_for_size, id_for_product_name)
@@ -163,7 +98,7 @@ def load_product_detail(item, conn, cur):
         conn.commit()
 
 
-def load_product_side(data):
+def load_product_side(data, conn, cur):
     # Get unique products with size and size
     unique_item = get_unique_item(data)
     
@@ -180,10 +115,6 @@ def load_product_side(data):
             VALUES (%s)
         """
 
-
-    conn = db_connection_setup()
-    cur = conn.cursor()
-
     for item in unique_item:
         try:
             ## Load product_name table
@@ -197,18 +128,10 @@ def load_product_side(data):
         
         load_product_detail(item, conn, cur)
 
-    cur.close()
-    conn.close()
-
-
-# load_product()
-# load_size()
-
-# load_product_side()
 
 ###################################
 # Transaction side
-def load_branch(data):
+def load_branch(data, conn, cur):
     unique_branch = get_unique_item_key('store_location', data)
     # print(unique_branch)
     
@@ -222,8 +145,6 @@ def load_branch(data):
             INSERT INTO branch(location)
             VALUES(%s)
         """
-    conn = db_connection_setup()
-    cur = conn.cursor()
 
     for branch in unique_branch: 
         try:
@@ -235,11 +156,8 @@ def load_branch(data):
         finally:
             conn.commit()
 
-    cur.close()
-    conn.close()
 
-
-def load_payment_type(data):
+def load_payment_type(data, conn, cur):
     unique_payment = get_unique_item_key('payment_type', data)
     
     sql_check = \
@@ -252,9 +170,6 @@ def load_payment_type(data):
             INSERT INTO payment_type(method)
             VALUES(%s)
         """
-
-    conn = db_connection_setup()
-    cur = conn.cursor()
     
     for payment in unique_payment:
         try:
@@ -266,88 +181,61 @@ def load_payment_type(data):
         finally:
             conn.commit()
 
-    cur.close()
-    conn.close()
 
-
-# def load_card_type(data):
-#     unique_card_type = get_unique_item_key('card_type', data)
-#     sql = \
-#         """
-#             INSERT INTO card_type(type)
-#             VALUES(%s)
-#         """
-#     conn = db_connection_setup()
-#     cur = conn.cursor()
-    
-#     for card_type in unique_card_type:
-#         try:
-#             cur.execute(sql, (card_type,) )
-
-#         except Exception as e:
-#             print('Cannot add card_type', e)
-#         finally:
-#             conn.commit()
-
-#     cur.close()
-#     conn.close()
-
-def basket_load(transaction_with_quantity, transaction_id, count):
+def basket_load(transaction_with_quantity, transaction_id, count, conn, cur):
         sql_basket = \
         """
             INSERT INTO basket (transaction_id, product_detail_id, quantity)
             VALUES (%s, %s, %s)
         """
-        conn = db_connection_setup()
-        cur = conn.cursor()
+
         for basket_list in transaction_with_quantity[count]:
             for key, value in basket_list.items():
                 key_split = key.split(',')
                 # print(key_split, value)
-                size_id = compare_get_query_id('SELECT * FROM size', key_split[0])
-                name_id = compare_get_query_id('SELECT * FROM product_name', key_split[1])
+                size_id = compare_get_query_id('SELECT * FROM size', key_split[0], cur)
+                name_id = compare_get_query_id('SELECT * FROM product_name', key_split[1], cur)
                 
-    
-                # print(size_id, name_id)
-                cur.execute(f"""
-                                SELECT product_detail_id
-                                FROM product_detail
-                                WHERE size_id = {size_id} AND product_name_id = {name_id}
-                            """)
-                product_detail_id = cur.fetchone()[0]
-                # print('details', product_detail_id)
-                sql_value = (transaction_id, product_detail_id, int(value),)
-                # print(sql_value)
-                # print(sql_basket)
-                cur.execute(sql_basket, sql_value)
+                try:
+                    # print(size_id, name_id)
+                    cur.execute(f"""
+                                    SELECT product_detail_id
+                                    FROM product_detail
+                                    WHERE size_id = {size_id} AND product_name_id = {name_id}
+                                """)
+                    product_detail_id = cur.fetchone()[0]
+                    # print('details', product_detail_id)
+                    sql_value = (transaction_id, product_detail_id, int(value),)
+                    # print(sql_value)
+                    # print(sql_basket)
+                    cur.execute(sql_basket, sql_value)
 
-                conn.commit()
-        cur.close()
-        conn.close()
+                    conn.commit()
+                except Exception as e:                    
+                    print('Cannot add basket_load: ', e)
+                    print('The cur includes: ', cur.fetchone())
 
-def load_transaction_side(data):
+
+def load_transaction_side(data, conn, cur):
     extract = Extract()
     # data = extract.extract_dict("../../data/cleaned_data.csv")
     transaction_with_quantity = transform_transaction_format(data)
-    
-    conn = db_connection_setup()
-    cur = conn.cursor()
     
     sql = \
         """
             INSERT INTO transaction (payment_type_id, branch_id, time_stamp, total_price)
             VALUES (%s, %s, %s, %s)
         """
-    load_branch(data)
-    load_payment_type(data)
+    load_branch(data, conn, cur)
+    load_payment_type(data, conn, cur)
     # load_card_type(data)
     
     count = 0
     for each_transaction in data:
         # print(each_transaction)
-        payment_type_val = compare_get_query_id('SELECT * FROM payment_type', each_transaction['payment_type'])
-        branch_val = compare_get_query_id('SELECT * FROM branch', each_transaction['store_location'])
-        # card_type_val = compare_get_query_id('SELECT * FROM card_type', each_transaction['card_type'])
+        payment_type_val = compare_get_query_id('SELECT * FROM payment_type', each_transaction['payment_type'], cur)
+        branch_val = compare_get_query_id('SELECT * FROM branch', each_transaction['store_location'], cur)
+        # card_type_val = compare_get_query_id('SELECT * FROM card_type', each_transaction['card_type'], cur)
         # print(each_transaction['timestamp'])
         time = datetime.strptime(each_transaction['timestamp'], '%d/%m/%Y %H:%M')
         
@@ -362,16 +250,14 @@ def load_transaction_side(data):
         finally:
             conn.commit()
         
-        basket_load(transaction_with_quantity, transaction_id, count)
-        # product_details_id = compare_get_query_id()
+        basket_load(transaction_with_quantity, transaction_id, count, conn, cur)
         
         count += 1 
-    
-    cur.close()
-    conn.close()
 
-def load_data(data):
-    load_size(data)
-    load_product_side(data)
+
+def load_data(data, conn, cur): 
+    # Load data
+    load_size(data, conn, cur)
+    load_product_side(data, conn, cur)
     print('Transaction side loading')
-    load_transaction_side(data)
+    load_transaction_side(data, conn, cur)
