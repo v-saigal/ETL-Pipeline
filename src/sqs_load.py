@@ -64,6 +64,6 @@ def lambda_handler(event, context):
     
     return {
         'statusCode': 200,
-        'body': json.dumps('Load has now completely finished')
+        'body': f'Total time: {(end-start)/60}'
     }
 
