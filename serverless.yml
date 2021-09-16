@@ -45,7 +45,8 @@ constructs:
     worker: 
       handler: src/sqs_load.lambda_handler
       role: "arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole"
-      timeout: 300
+      timeout: 600
+      memorySize: 10240
       reservedConcurrency: 1
       layers: 
         - Ref: PythonRequirementsLambdaLayer
