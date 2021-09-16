@@ -1,6 +1,10 @@
 import json
 import boto3
+import time
+
+from src.ETL.postgres_table import create_tables
 from src.ETL.load import load_data
+from src.ETL.database_con import DbConn
 
 def open_file(file_name, bucket):
     s3 = boto3.client('s3')
@@ -19,10 +23,26 @@ def lambda_handler(event, context):
     file_name = event['Records'][0]['body']
     data = json.loads(open_file(file_name, bucket))
     
+    # Set up connection
+    start = time.time()
+    
+    database_setup = DbConn()
+    conn = database_setup.db_connection_setup()
+    cur = conn.cursor()
+    
+    create_tables(conn, cur)
+
     print(data)
     print('loading')
-    load_data(data)
+    load_data(data, conn, cur)
     print('finished loading')
+    
+    cur.close()
+    conn.close()
+    
+    end = time.time()
+    print(f'Load Total time for {file_name}: {end-start}')
+    
     
     # Old method, linking through functions
     # print(event['Records'])
@@ -44,6 +64,6 @@ def lambda_handler(event, context):
     
     return {
         'statusCode': 200,
-        'body': json.dumps('Is this working Ruby?')
+        'body': f'Total time: {(end-start)/60}'
     }
 
