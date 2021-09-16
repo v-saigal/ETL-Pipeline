@@ -27,7 +27,7 @@ functions:
     handler: src/sqs_extract_transform.lambda_handler
     environment:
       QUEUE_URL: "https://sqs.eu-west-1.amazonaws.com/351115496094/etl-group-3-sqs-dev-load"
-    role: "arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole"
+    role: arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole
     timeout: 300
     layers: 
       - Ref: PythonRequirementsLambdaLayer
@@ -44,7 +44,7 @@ constructs:
     type: queue
     worker: 
       handler: src/sqs_load.lambda_handler
-      role: "arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole"
+      role: arn:aws:iam::351115496094:role/etl-group-3-dev-etl3-eu-west-1-lambdaRole
       timeout: 600
       memorySize: 10240
       reservedConcurrency: 1
