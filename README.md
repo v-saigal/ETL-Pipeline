@@ -17,4 +17,4 @@ EC2<br />
 Redshift<br />
 Cloud Watch<br />
 Grafana<br />
-Here is a supporting image that illustrates the technical architecture of this project.
+
